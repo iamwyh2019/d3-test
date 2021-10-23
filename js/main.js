@@ -1,14 +1,9 @@
 const _width = window.innerWidth;
 const _height = window.innerHeight;
 
-let data = [
-    {type: 'Auto', data: [80, 45]},
-    {type: 'Public\ntransit', data: [5, 35]},
-    {type: 'Bike', data: [1, 3]},
-    {type: 'Walk', data: [4, 23]}
-];
-
 let tick_bottom_y, top_line_height;
+
+let nonlinear = x => (1/(1+Math.exp(-5*x+3))-0.047426)/0.833371;
 
 function get_text_size(className) {
     let svg = d3.select('#container').select('svg');
@@ -79,6 +74,14 @@ function draw_background() {
 }
 
 function draw_bars() {
+    const special_delay = 900;
+    const data = [
+        {type: 'Auto', data: [80, 45], edelay: 0},
+        {type: 'Public\ntransit', data: [5, 35], edelay: special_delay + BAR_TWO_RISE_DURATION*2},
+        {type: 'Bike', data: [1, 3], edelay: special_delay + BAR_TWO_RISE_DURATION},
+        {type: 'Walk', data: [4, 23], edelay: special_delay}
+    ];
+
     let svg = d3.select('#container').select('svg');
     let bars = svg.append('g')
         .attr('id', 'bars');
@@ -100,17 +103,30 @@ function draw_bars() {
 
     bars_enter.append('rect')
         .attr('x', (d,i) => _x(i) - (BAR_GAP*0.5 + BAR_WIDTH))
-        .attr('y', d => _y(d.data[0]))
         .attr('width', BAR_WIDTH)
+        .attr('fill', AVERAGE_BAR_COLOR)
+        .attr('height', 0)
+        .attr('y', tick_bottom_y)
+        .transition()
+        .duration(BAR_ONE_RISE_DURATION)
+        .delay(LEGEND_DURATION)
+        .ease(nonlinear)
+        .attr('y', d => _y(d.data[0]))
         .attr('height', d => _h(d.data[0]))
-        .attr('fill', AVERAGE_BAR_COLOR);
+        ;
 
     bars_enter.append('rect')
         .attr('x', (d,i) => _x(i) + BAR_GAP*0.5)
-        .attr('y', d => _y(d.data[1]))
         .attr('width', BAR_WIDTH)
-        .attr('height', d => _h(d.data[1]))
-        .attr('fill', TRANSIT_BAR_COLOR);
+        .attr('fill', TRANSIT_BAR_COLOR)
+        .attr('y', tick_bottom_y)
+        .attr('height', 0)
+        .transition()
+        .delay(d => SECOND_PART_DELAY + d.edelay)
+        .duration(BAR_TWO_RISE_DURATION)
+        .ease(nonlinear)
+        .attr('y', d => _y(d.data[1]))
+        .attr('height', d => _h(d.data[1]));
 
     let text_height = get_text_size('typetext').height*0.8;
     let text_enter = bars_enter.append('text')
@@ -129,12 +145,22 @@ function draw_bars() {
 
 function draw_legends() {
     const legend_data = [
-        ['National average', AVERAGE_BAR_COLOR],
-        ['Transit-oriented\ndevelopments', TRANSIT_BAR_COLOR]
+        {
+            text: 'National average',
+            color: AVERAGE_BAR_COLOR,
+            duration: LEGEND_DURATION,
+            delay: 0
+        },
+        {
+            text: 'Transit-oriented\ndevelopments',
+            color: TRANSIT_BAR_COLOR,
+            duration: LEGEND_DURATION,
+            delay: SECOND_PART_DELAY
+        }
     ];
 
     let line_sz = get_text_size('legendtext');
-    let line_wd = line_sz.width * legend_data[0][0].length, line_ht = line_sz.height*0.8;
+    let line_wd = line_sz.width * legend_data[0].text.length, line_ht = line_sz.height*0.8;
 
     let svg = d3.select('#container').select('svg');
     let legend = svg.append('g').attr('id', 'legend');
@@ -150,7 +176,7 @@ function draw_legends() {
         .attr('transform', (d,i) => 
             `translate(${(SVG_WIDTH+BAR_AREA_WIDTH)/2},${top_line_height + (i-0.5)*2*(TICK_HEIGHT/2+line_ht)})`)
         .selectAll('tspan')
-        .data(d => d[0].split('\n'))
+        .data(d => d.text.split('\n'))
         .enter()
         .append('tspan')
         .attr('x', 0)
@@ -160,9 +186,19 @@ function draw_legends() {
     legend_enter.append('rect')
         .attr('height', LEGEND_SIZE)
         .attr('width', LEGEND_SIZE)
-        .attr('fill', d => d[1])
-        .attr('y', (d,i) => top_line_height + (i-0.5)*2*(TICK_HEIGHT/2+10+LEGEND_SIZE/2) - LEGEND_SIZE/2)
+        .attr('fill', d => d.color)
+        .attr('y', (d,i) => 
+            top_line_height + (i-0.5)*2*(TICK_HEIGHT/2+10+LEGEND_SIZE/2) - LEGEND_SIZE/2)
         .attr('x', (SVG_WIDTH+BAR_AREA_WIDTH)/2 - line_wd);
+
+    legend_enter.attr('transform', 'translate(-50,0)')
+        .style('opacity', 0)
+        .transition()
+        .duration(d => d.duration)
+        .delay(d => d.delay)
+        .ease(nonlinear)
+        .attr('transform', 'translate(0,0)')
+        .style('opacity', 1);
 }
 
 draw_background();
