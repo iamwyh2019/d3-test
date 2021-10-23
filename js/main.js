@@ -1,14 +1,22 @@
 const _width = window.innerWidth;
 const _height = window.innerHeight;
 
-const data = [
+let data = [
     {type: 'Auto', data: [80, 45]},
-    {type: 'Public transit', data: [5, 35]},
+    {type: 'Public\ntransit', data: [5, 35]},
     {type: 'Bike', data: [1, 3]},
     {type: 'Walk', data: [4, 23]}
 ];
 
 let tick_bottom_y;
+
+function get_text_size(className) {
+    let svg = d3.select('#container').select('svg');
+    let phony_text = svg.append('text').attr('class', className).text('1');
+    let text_size = phony_text.node().getBBox();
+    phony_text.remove();
+    return text_size;
+}
 
 function draw_background() {
     let padding = {left: (_width - SVG_WIDTH)/2, top: (_height - SVG_HEIGHT)/2};
@@ -78,7 +86,6 @@ function draw_bars() {
     // plus 0.5 gaps on each end, that sums up to n gaps
     // Space taken by bar groups: 2*BAR_WIDTH + BAR_GAP
     let group_gap = (BAR_AREA_WIDTH - (2*BAR_WIDTH+BAR_GAP)*n) / n;
-    console.log(group_gap, BAR_AREA_WIDTH);
     // x-axis of middle point of each group
     let _x = (i) => SVG_WIDTH/2 - (n/2-i-0.5) * (group_gap + BAR_WIDTH*2 + BAR_GAP);
     let _h = (d) => d/100*BAR_AREA_HEIGHT;
@@ -104,13 +111,19 @@ function draw_bars() {
         .attr('height', d => _h(d.data[1]))
         .attr('fill', TRANSIT_BAR_COLOR);
 
-    bars_enter.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('x', (d,i) => _x(i))
-        .attr('y', tick_bottom_y + 40)
+    let text_height = get_text_size('typetext').height*0.8;
+    let text_enter = bars_enter.append('text')
         .attr('class', 'typetext')
-        .attr('dominant-baseline', 'hanging')
-        .text(d => d.type);
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle')
+        .attr('transform', (d,i) => `translate(${_x(i)},${tick_bottom_y + text_height})`)
+        .selectAll('tspan')
+        .data(d => d.type.split('\n'))
+        .enter()
+        .append('tspan')
+        .attr('x', 0)
+        .attr('y', (d,i) => i*text_height)
+        .text(d => d);
 }
 
 draw_background();
