@@ -1,6 +1,11 @@
 @font-face {
-    font-family: century;
-    src: url('CENTURY.ttf');
+    font-family: harriet;
+    src: url('HARRIETTEXTMEDIUM.OTF');
+}
+
+@font-face {
+    font-family: belto;
+    src: url('Balto-Book.ttf');
 }
 
 html,body {
@@ -14,12 +19,24 @@ html,body {
 
 #title {
     font-size: 2.8rem;
-    font-family: century;
-    font-weight: 550;
+    font-family: harriet;
+    font-weight: 5;
 }
 
 #subtitle {
     font-size: 1.4rem;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: belto;
     font-weight: 530;
+}
+
+.typetext {
+    font-family: harriet;
+    font-size: 2.5rem;
+    font-weight: 550;
+}
+
+.ticktext {
+    font-family: belto;
+    font-size: 2.0rem;
+    font-weight: 500;
 }
