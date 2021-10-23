@@ -9,3 +9,4 @@ const BAR_AREA_HEIGHT = SVG_HEIGHT * 0.7;
 const BAR_WIDTH = 40;
 const BAR_GAP = 10;
 const TICK_HEIGHT = 7;
+const LEGEND_SIZE = 40; // It's a square

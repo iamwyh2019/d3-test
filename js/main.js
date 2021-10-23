@@ -8,7 +8,7 @@ let data = [
     {type: 'Walk', data: [4, 23]}
 ];
 
-let tick_bottom_y;
+let tick_bottom_y, top_line_height;
 
 function get_text_size(className) {
     let svg = d3.select('#container').select('svg');
@@ -46,8 +46,6 @@ function draw_background() {
     
     let ticks = svg.append('g')
         .attr('id', 'ticks');
-    let bars = svg.append('g')
-        .attr('id', 'bars');
 
     const tick_data = [
         ['0%', BOTTOM_LINE_COLOR],
@@ -68,6 +66,8 @@ function draw_background() {
         .attr('y', (d,i) => (subtitle_y + BAR_AREA_HEIGHT * (1-i/tick_data.length)))
         .attr('height', TICK_HEIGHT)
         .attr('fill', d => d[1]);
+
+    top_line_height = subtitle_y + BAR_AREA_HEIGHT/tick_data.length + TICK_HEIGHT/2;
     
     tick_enter.append('text')
         .attr('text-anchor', 'end')
@@ -80,6 +80,8 @@ function draw_background() {
 
 function draw_bars() {
     let svg = d3.select('#container').select('svg');
+    let bars = svg.append('g')
+        .attr('id', 'bars');
     let n = data.length;
     // Calculate space between each groups
     // When there are n groups, there are (n-1) gaps
@@ -91,8 +93,7 @@ function draw_bars() {
     let _h = (d) => d/100*BAR_AREA_HEIGHT;
     let _y = (d) => tick_bottom_y - _h(d);
 
-    let bars_enter = svg.select('#bars')
-        .selectAll('g')
+    let bars_enter = bars.selectAll('g')
         .data(data)
         .enter()
         .append('g');
@@ -126,5 +127,44 @@ function draw_bars() {
         .text(d => d);
 }
 
+function draw_legends() {
+    const legend_data = [
+        ['National average', AVERAGE_BAR_COLOR],
+        ['Transit-oriented\ndevelopments', TRANSIT_BAR_COLOR]
+    ];
+
+    let line_sz = get_text_size('legendtext');
+    let line_wd = line_sz.width * legend_data[0][0].length, line_ht = line_sz.height*0.8;
+
+    let svg = d3.select('#container').select('svg');
+    let legend = svg.append('g').attr('id', 'legend');
+    let legend_enter = legend.selectAll('g')
+        .data(legend_data)
+        .enter()
+        .append('g');
+
+    legend_enter.append('text')
+        .attr('class', 'legendtext')
+        .attr('text-anchor', 'end')
+        .attr('dominant-baseline', 'middle')
+        .attr('transform', (d,i) => 
+            `translate(${(SVG_WIDTH+BAR_AREA_WIDTH)/2},${top_line_height + (i-0.5)*2*(TICK_HEIGHT/2+line_ht)})`)
+        .selectAll('tspan')
+        .data(d => d[0].split('\n'))
+        .enter()
+        .append('tspan')
+        .attr('x', 0)
+        .attr('y', (d,i) => i*line_ht)
+        .text(d => d);
+
+    legend_enter.append('rect')
+        .attr('height', LEGEND_SIZE)
+        .attr('width', LEGEND_SIZE)
+        .attr('fill', d => d[1])
+        .attr('y', (d,i) => top_line_height + (i-0.5)*2*(TICK_HEIGHT/2+10+LEGEND_SIZE/2) - LEGEND_SIZE/2)
+        .attr('x', (SVG_WIDTH+BAR_AREA_WIDTH)/2 - line_wd);
+}
+
 draw_background();
+draw_legends();
 draw_bars();
