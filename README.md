@@ -2,8 +2,6 @@
 
 I created this project at 1:00pm Oct. 23, but did not began really writing it till 18:00pm. It took roughly 4 hours to complete the entire project + record a brief video (see commit log).
 
-![image-20211023223050256](C:\Users\ReCOR\AppData\Roaming\Typora\typora-user-images\image-20211023223050256.png)
-
 ## Details
 
 I used d3 library and did not use any frameworks. `main.js` handles all the drawing and animations, and `params.js` defines some constants (like bar width, gap width, etc).
