@@ -6,6 +6,6 @@ const SVG_WIDTH = window.innerWidth * 0.8;
 const SVG_HEIGHT = window.innerHeight * 0.9;
 const BAR_AREA_WIDTH = SVG_WIDTH * 0.8;
 const BAR_AREA_HEIGHT = SVG_HEIGHT * 0.7;
-const BAR_WIDTH = 50;
+const BAR_WIDTH = 40;
 const BAR_GAP = 10;
 const TICK_HEIGHT = 7;
